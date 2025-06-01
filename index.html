@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>El Tiempo en Torre del Mar</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-image: url('eltiempoentorredelmar.jpeg');
+      background-size: cover;
+      background-position: center;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      backdrop-filter: brightness(0.7);
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.6);
+      margin: 2rem auto;
+      max-width: 1000px;
+      padding: 2rem;
+      border-radius: 12px;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    p {
+      margin: 0.3em 0;
+    }
+
+    a {
+      color: #ffd700;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .day-section {
+      margin-top: 2rem;
+    }
+
+    canvas {
+      background-color: white;
+      border-radius: 12px;
+      padding: 1rem;
+      margin: 2rem 0;
+    }
+.mi-footer {
+  text-align: center;
+  padding: 15px;
+  font-size: 14px;
+}
+.mi-footer a {
+  color: #007bff;
+  text-decoration: none;
+}
+.mi-footer a:hover {
+  text-decoration: underline;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>El Tiempo en Torre del Mar</h1>
+
+    <div class="day-section">
+      <h2>Domingo, 1 de junio de 2025</h2>
+      <p><strong>Estado del cielo:</strong> Muy nuboso</p>
+      <p><strong>Temperatura máxima:</strong> 28 °C</p>
+      <p><strong>Sensación térmica:</strong> Calor agradable</p>
+      <p><strong>Viento:</strong> Moderado</p>
+      <p><strong>Oleaje:</strong> Débil</p>
+      <p><strong>Calidad del aire:</strong> Moderada (AQI: 42)</p>
+    </div>
+
+    <div class="day-section">
+      <h2>Lunes, 2 de junio de 2025</h2>
+      <p><strong>Estado del cielo:</strong> Parcialmente nublado</p>
+      <p><strong>Temperatura máxima:</strong> 29 °C</p>
+      <p><strong>Temperatura mínima:</strong> 17 °C</p>
+      <p><strong>Precipitaciones:</strong> 0 mm</p>
+      <p><strong>Viento:</strong> Moderado</p>
+      <p><strong>Calidad del aire:</strong> Moderada (AQI: 52)</p>
+    </div>
+
+    <div class="day-section">
+      <h2>Martes, 3 de junio de 2025</h2>
+      <p><strong>Estado del cielo:</strong> Parcialmente soleado</p>
+      <p><strong>Temperatura máxima:</strong> 28 °C</p>
+      <p><strong>Temperatura mínima:</strong> 18 °C</p>
+      <p><strong>Precipitaciones:</strong> 0 mm</p>
+      <p><strong>Viento:</strong> Moderado</p>
+      <p><strong>Calidad del aire:</strong> Buena (AQI: 47)</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 1rem;">
+      <a href="https://www.aemet.es/es/eltiempo/prediccion/playas/torre-del-mar-2909406" target="_blank">Ver pronóstico completo en AEMET</a>
+    </div>
+
+    <canvas id="airChart" width="900" height="300"></canvas>
+    <canvas id="cloudChart" width="900" height="300"></canvas>
+    <canvas id="sunChart" width="900" height="300"></canvas>
+  </div>
+
+  <script>
+    const labels = ['Domingo', 'Lunes', 'Martes'];
+
+    const airData = {
+      labels: labels,
+      datasets: [{
+        label: 'Índice AQI',
+        backgroundColor: 'rgba(255, 99, 132, 0.3)',
+        borderColor: 'rgb(255, 99, 132)',
+        data: [42, 52, 47],
+        fill: true,
+        tension: 0.4,
+      }]
+    };
+
+    const cloudData = {
+      labels: labels,
+      datasets: [{
+        label: 'Nubosidad (%)',
+        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+        data: [90, 45, 30]
+      }]
+    };
+
+    const sunData = {
+      labels: labels,
+      datasets: [{
+        label: 'Horas de Sol',
+        backgroundColor: 'rgba(255, 206, 86, 0.7)',
+        data: [3, 8, 10]
+      }]
+    };
+
+    new Chart(document.getElementById('airChart'), {
+      type: 'line',
+      data: airData,
+      options: { responsive: true }
+    });
+
+    new Chart(document.getElementById('cloudChart'), {
+      type: 'bar',
+      data: cloudData,
+      options: { responsive: true }
+    });
+
+    new Chart(document.getElementById('sunChart'), {
+      type: 'bar',
+      data: sunData,
+      options: { responsive: true }
+    });
+  </script>
+
+<div class="mi-footer">
+  <a href="https://www.miprochip.com" target="_blank">Web desarrollada por miprochip.com </a>
+</div>
+</body>
+</html>
