@@ -12,164 +12,133 @@
 </script>
   <meta charset="UTF-8">
   <title>El Tiempo en Torre del Mar</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-image: url('eltiempoentorredelmar.jpeg');
-      background-size: cover;
-      background-position: center;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
-      backdrop-filter: brightness(0.7);
-    }
+  
+<!-- ⚠️ Requiere API Key de OpenWeather -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const apiKey = "fd12f207030d70443a4136802259ed7f";
+  const lat = 36.7428;
+  const lon = -4.0991;
 
-    .container {
-      background-color: rgba(0, 0, 0, 0.6);
-      margin: 2rem auto;
-      max-width: 1000px;
-      padding: 2rem;
-      border-radius: 12px;
-    }
+  async function getWeatherData() {
+    const resWeather = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=es&appid=${apiKey}`);
+    const resAir = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}`);
+    const weather = await resWeather.json();
+    const air = await resAir.json();
 
-    h1, h2 {
-      text-align: center;
-    }
+    const groupedDays = [[], [], []];
 
-    p {
-      margin: 0.3em 0;
-    }
+    const today = new Date().getDate();
+    weather.list.forEach(entry => {
+      const entryDate = new Date(entry.dt_txt);
+      const dayOffset = entryDate.getDate() - today;
+      if (dayOffset >= 0 && dayOffset < 3) groupedDays[dayOffset].push(entry);
+    });
 
-    a {
-      color: #ffd700;
-      text-decoration: none;
-    }
+    const container = document.querySelector(".container");
+    container.innerHTML = `<h1>El Tiempo en Torre del Mar</h1>`;
 
-    a:hover {
-      text-decoration: underline;
-    }
+    const labels = [];
+    const aqiData = [];
+    const cloudData = [];
+    const sunData = [];
 
-    .day-section {
-      margin-top: 2rem;
-    }
+    groupedDays.forEach((entries, i) => {
+      if (entries.length === 0) return;
+      const date = new Date(entries[0].dt_txt);
+      const diaSemana = date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
-    canvas {
-      background-color: white;
-      border-radius: 12px;
-      padding: 1rem;
-      margin: 2rem 0;
-    }
-.mi-footer {
-  text-align: center;
-  padding: 15px;
-  font-size: 14px;
-}
-.mi-footer a {
-  color: #007bff;
-  text-decoration: none;
-}
-.mi-footer a:hover {
-  text-decoration: underline;
-}
+      let tempMax = -Infinity, tempMin = Infinity;
+      let precip = 0, clouds = 0, wind = 0, humidity = 0, sunHours = 0;
+      entries.forEach(e => {
+        tempMax = Math.max(tempMax, e.main.temp_max);
+        tempMin = Math.min(tempMin, e.main.temp_min);
+        precip += e.rain?.["3h"] || 0;
+        clouds += e.clouds.all;
+        wind += e.wind.speed;
+        humidity += e.main.humidity;
+        if (e.weather[0].main.toLowerCase().includes("clear")) sunHours += 3;
+      });
 
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>El Tiempo en Torre del Mar</h1>
+      clouds = Math.round(clouds / entries.length);
+      wind = (wind / entries.length).toFixed(1);
+      humidity = Math.round(humidity / entries.length);
 
-    <div class="day-section">
-      <h2>Domingo, 1 de junio de 2025</h2>
-      <p><strong>Estado del cielo:</strong> Muy nuboso</p>
-      <p><strong>Temperatura máxima:</strong> 28 °C</p>
-      <p><strong>Sensación térmica:</strong> Calor agradable</p>
-      <p><strong>Viento:</strong> Moderado</p>
-      <p><strong>Oleaje:</strong> Débil</p>
-      <p><strong>Calidad del aire:</strong> Moderada (AQI: 42)</p>
-    </div>
+      const aqi = air.list[i]?.main.aqi || 2;
+      const calidad = ["Buena", "Moderada", "Dañina", "Muy dañina", "Peligrosa"][aqi - 1];
 
-    <div class="day-section">
-      <h2>Lunes, 2 de junio de 2025</h2>
-      <p><strong>Estado del cielo:</strong> Parcialmente nublado</p>
-      <p><strong>Temperatura máxima:</strong> 29 °C</p>
-      <p><strong>Temperatura mínima:</strong> 17 °C</p>
-      <p><strong>Precipitaciones:</strong> 0 mm</p>
-      <p><strong>Viento:</strong> Moderado</p>
-      <p><strong>Calidad del aire:</strong> Moderada (AQI: 52)</p>
-    </div>
+      container.innerHTML += `
+        <div class="day-section">
+          <h2>${diaSemana}</h2>
+          <p><strong>Temperatura:</strong> ${Math.round(tempMin)}–${Math.round(tempMax)} °C</p>
+          <p><strong>Precipitaciones:</strong> ${precip.toFixed(1)} mm</p>
+          <p><strong>Nubosidad:</strong> ${clouds}%</p>
+          <p><strong>Humedad:</strong> ${humidity}%</p>
+          <p><strong>Viento:</strong> ${wind} m/s</p>
+          <p><strong>Índice UV:</strong> (consulta aparte)</p>
+          <p><strong>Calidad del aire:</strong> ${calidad} (AQI: ${aqi})</p>
+          <p><strong>Horas de Sol estimadas:</strong> ${sunHours} h</p>
+        </div>
+      `;
 
-    <div class="day-section">
-      <h2>Martes, 3 de junio de 2025</h2>
-      <p><strong>Estado del cielo:</strong> Parcialmente soleado</p>
-      <p><strong>Temperatura máxima:</strong> 28 °C</p>
-      <p><strong>Temperatura mínima:</strong> 18 °C</p>
-      <p><strong>Precipitaciones:</strong> 0 mm</p>
-      <p><strong>Viento:</strong> Moderado</p>
-      <p><strong>Calidad del aire:</strong> Buena (AQI: 47)</p>
-    </div>
+      labels.push(diaSemana.split(',')[0]);
+      aqiData.push(aqi * 20);
+      cloudData.push(clouds);
+      sunData.push(sunHours);
+    });
 
-    <div style="text-align: center; margin-top: 1rem;">
-      <a href="https://www.aemet.es/es/eltiempo/prediccion/playas/torre-del-mar-2909406" target="_blank">Ver pronóstico completo en AEMET</a>
-    </div>
-
-    <canvas id="airChart" width="900" height="300"></canvas>
-    <canvas id="cloudChart" width="900" height="300"></canvas>
-    <canvas id="sunChart" width="900" height="300"></canvas>
-  </div>
-
-  <script>
-    const labels = ['Domingo', 'Lunes', 'Martes'];
-
-    const airData = {
-      labels: labels,
-      datasets: [{
-        label: 'Índice AQI',
-        backgroundColor: 'rgba(255, 99, 132, 0.3)',
-        borderColor: 'rgb(255, 99, 132)',
-        data: [42, 52, 47],
-        fill: true,
-        tension: 0.4,
-      }]
-    };
-
-    const cloudData = {
-      labels: labels,
-      datasets: [{
-        label: 'Nubosidad (%)',
-        backgroundColor: 'rgba(54, 162, 235, 0.7)',
-        data: [90, 45, 30]
-      }]
-    };
-
-    const sunData = {
-      labels: labels,
-      datasets: [{
-        label: 'Horas de Sol',
-        backgroundColor: 'rgba(255, 206, 86, 0.7)',
-        data: [3, 8, 10]
-      }]
-    };
+    container.innerHTML += `
+      <canvas id="airChart" width="900" height="300"></canvas>
+      <canvas id="cloudChart" width="900" height="300"></canvas>
+      <canvas id="sunChart" width="900" height="300"></canvas>
+    `;
 
     new Chart(document.getElementById('airChart'), {
       type: 'line',
-      data: airData,
+      data: {
+        labels,
+        datasets: [{
+          label: 'Índice AQI',
+          backgroundColor: 'rgba(255, 99, 132, 0.3)',
+          borderColor: 'rgb(255, 99, 132)',
+          data: aqiData,
+          tension: 0.4,
+          fill: true
+        }]
+      },
       options: { responsive: true }
     });
 
     new Chart(document.getElementById('cloudChart'), {
       type: 'bar',
-      data: cloudData,
+      data: {
+        labels,
+        datasets: [{
+          label: 'Nubosidad (%)',
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          data: cloudData
+        }]
+      },
       options: { responsive: true }
     });
 
     new Chart(document.getElementById('sunChart'), {
       type: 'bar',
-      data: sunData,
+      data: {
+        labels,
+        datasets: [{
+          label: 'Horas de Sol',
+          backgroundColor: 'rgba(255, 206, 86, 0.7)',
+          data: sunData
+        }]
+      },
       options: { responsive: true }
     });
-  </script>
+  }
+
+  getWeatherData();
+</script>
+
 
 <div class="mi-footer">
   <a href="https://www.miprochip.com" target="_blank">Web desarrollada por miprochip.com </a>
